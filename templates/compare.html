@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <meta charset="UTF-8">
+	  <title>Difi data</title>
+      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
+	</head>
+	<body>
+		<h1> Difi data representert av oss</h1>
+			<h2>Resultat:</h2>
+			
+			<div id = "tables">
+			<table id= "table_one">
+				<thead>
+					<tr>
+				     <th rowspan=2>Felt</th>
+		   			 <th rowspan=2>Verdi</th>
+		  			</tr>
+		  			
+	  			</thead>
+	  			<tbody>
+                    {% for key,value in results["old"].items() %}
+	  				<tr>
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+		  			</tr>
+                    {%endfor%}
+	  			</tbody>
+			</table>
+
+			<table id= "table_two">
+				<thead>
+					<tr>
+				     <th rowspan=2>Felt</th>
+		   			 <th rowspan=2>Verdi</th>
+		  			</tr>
+	  			</thead>
+	  			<tbody>
+                    {% for key,value in results["new"].items() %}
+	  				<tr>
+                        <td>{{key}}</td>
+                        {% if key in results["diff"].keys() %}   
+                            <td id="orange">{{value}}</td>
+                        {% else %}
+                            <td>{{value}}</td>
+                        {%endif %}
+		  				<!-- <td id="orange">92222328</td> -->
+		  			</tr>
+                    {%endfor%}
+	  			</tbody>
+			</table>
+		    </div>
+
+		
+	</body>
+
+</html>

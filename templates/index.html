@@ -3,18 +3,21 @@
 	<head>
 	  <meta charset="UTF-8">
 	  <title>Difi data</title>
-	  <link type="text/css" rel="stylesheet" href="stylesheet.css"/>
+      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
 	</head>
 	<body>
 		<h1> Difi data representert av oss</h1>
 
 			<h2>Søk</h2>
 			<div class="s_cont">
-			<form action="file:///C:/Users/madsk/Desktop/Skole/Master/310/oppgave/web/tabell++.html" id="search_bar">
-				<input type="text" placeholder="Her kan du søke etter en bedrift eller organisasjon" maxlength="500" id="search">
-			    
-			    <button id="submit" value="Search" name="trykk" type="submit" id="knapp">Søk</button>﻿
+
+			<form role="search" action="/search" method="post" id="search_bar">
+                <div class="form-group">
+				    <input type="text" placeholder="Her kan du søke etter en bedrift eller organisasjon" id="search" name="search">
+                </div>
+                <button type="submit" id="knapp">Søk</button>
 			</form>
+
 
 			<div class="dropdown">
   				<button class="dropbtn">Dropdown</button>

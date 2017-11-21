@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <meta charset="UTF-8">
+	  <title>Difi data</title>
+      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
+	</head>
+	<body>
+		<h1> Difi data representert av oss</h1>
+
+			<h2>Resultat:</h2>
+			<table id= "main_table">
+				<caption>Søkeresultater</caption>
+				<thead>
+					<tr>
+                      {% for key in result[0]['_source'].keys() %}
+                          <th rowspan=2>{{key}}</th>
+                      {% endfor %}
+		  			</tr>
+	  			</thead>
+	  			<tbody>
+                    {% for hit in result%}
+	  				<tr>
+                        {% for value in hit["_source"].values() %}
+                            <td>{{value}}</td>
+                        {%endfor%}
+                        <td><a class="button" href="/choose/testdict/{{hit["_id"]}}"> Velg </td>
+	  				</tr>
+                    {% endfor %}
+	  			</tbody>
+
+			</table>
+			<footer id="bunn">
+				<p>
+					<h4>Laget av Dag, Morten og Mads</h4>
+				</p>
+			</footer>
+	</body>
+
+</html>

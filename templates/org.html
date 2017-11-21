@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <meta charset="UTF-8">
+	  <title>Difi data</title>
+      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
+	</head>
+	<body>
+		<h1> Difi data representert av oss</h1>
+
+			<h2>Resultat:</h2>
+            <form role="check" action="/diff/testdict/{{result['_id']}}" method="post" id="check_fields">
+			<table id= "main_table">
+				<caption>Velg to versoner å sammenligne</caption>
+				<thead>
+					<tr>
+                          <th rowspan=2>Versjon</th>
+                      {% for key in result['_source'].keys() %}
+                          <th rowspan=2>{{key}}</th>
+                      {% endfor %}
+		  			 <th rowspan=2>Velg</th>
+		  			</tr>
+
+	  			</thead>
+	  			<tbody>
+
+                    {% for i in range(1, result["_version"]+1) %}
+	  				<tr>
+                        
+                        <td>{{i}}</td>
+                        {% for value in result["_source"].values() %}
+                            <td>{{value}}</td>
+                        {%endfor%}
+                            <td><input type="checkbox" name={{i}} value='checks'></td>
+	  				</tr>
+                    {% endfor %}
+
+	  				<tr>
+	  				</tr>
+	  			</tbody>
+	  		</table>
+            <button type="submit" id="org_knapp">Trykk</button>
+            </form>
+
+	</body>
+</html>
