@@ -7,8 +7,8 @@
 	</head>
 	<body>
 		<h1> Difi data representert av oss</h1>
+		    {% if results %}	
 			<h2>Resultat:</h2>
-			
 			<div id = "tables">
 			<table id= "table_one">
 				<thead>
@@ -19,12 +19,14 @@
 		  			
 	  			</thead>
 	  			<tbody>
+                    {% if results %}
                     {% for key,value in results["old"].items() %}
 	  				<tr>
                         <td>{{key}}</td>
                         <td>{{value}}</td>
 		  			</tr>
                     {%endfor%}
+                    {% endif %}
 	  			</tbody>
 			</table>
 
@@ -44,13 +46,11 @@
                         {% else %}
                             <td>{{value}}</td>
                         {%endif %}
-		  				<!-- <td id="orange">92222328</td> -->
 		  			</tr>
                     {%endfor%}
 	  			</tbody>
 			</table>
 		    </div>
-
 	
         <script src="{{ url_for('static', filename='exporting.js') }}"></script>
         <script src="{{ url_for('static', filename='highcharts.js') }}"></script>
@@ -117,8 +117,9 @@
             }]
         });
 		</script>
-
-
+            {% else %}
+            <p>No differences in the data</p>
+            {% endif %}
 	</body>
 
 </html>

@@ -13,102 +13,88 @@ es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
 
 
 def insert_to_main(row, id, index, doctype):
-    res = es.index(index=index, doc_type=doctype, id=id, body=row)
+    es.index(index=index, doc_type=doctype, id=id, body=row)
 
 def insert_new_version(row, id, version, index, doctype):
     id = "{}_{}".format(str(id), str(version))
-    print(id)
-    res = es.index(index=index, doc_type=doctype, id=id, body=row)
+    es.index(index=index, doc_type=doctype, id=id, body=row)
 
 
-def indexing(row, index, doctype):
+def indexing(row, index, doctype, key):
     # Exception handling for errors related to elastic search not finding the row uploaded to the index
     try:
-        res = es.get(index=index, doc_type=doctype, id=row['orgnr'])
+        res = es.get(index=index, doc_type=doctype, id=key(row))
     except Exception as e:
-        print('Organization not found (probably): ' + str(e))
-        insert_to_main(row, row["orgnr"], "testversioningdag", "testdict")
-        insert_new_version(row, row["orgnr"], 1, "testversioningdag", "testdictversions")
-        print('New org was appended to versionList')
+        # print('Organization not found (probably): ' + str(e))
+        insert_to_main(row, key(row), index, doctype)
+        insert_new_version(row, key(row), 1, index, doctype+"_versions")
+        # print('New org was appended to versionList')
     else:
-        print(repr(res['_source']))
-        print(repr(row))
-        print('equal? ' + str(res['_source'] == row))
+        # print(repr(res['_source']))
+        # print(repr(row))
+        # print('equal? ' + str(res['_source'] == row))
         if res['found']:
             if res['_source'] != row:
-                print(str(row['orgnr']) + "have changed")
+                print(str(key(row)) + "have changed")
                 print('version : ' + str(res['_version']))
-                insert_to_main(row, row["orgnr"], "testversioningdag" "testdict")
-                insert_new_version(row, row["orgnr"], res['_version']+1, "testversioningdag", "testdictversions")
-            else:
-                print(str(row['orgnr']) + ' no change')
-        else:
-            print(str(row['orgnr']) + ' not found - strange because this should cause an ES exception')
+                insert_to_main(row, key(row), index, doctype)
+                insert_new_version(row, key(row), res['_version']+1, index, doctype+"_versions")
+            # else:
+                # print(str(row['orgnr']) + ' no change')
+        # else:
+            # print(str(row['orgnr']) + ' not found - strange because this should cause an ES exception')
 
 
 # Indexing the new document
-def indexIntoMainIndex(input, index, doctype):
+def indexIntoMainIndex(input, index, doctype, key):
     print('Checkmark for main indexing')
     while True:
         row = input.get()
         if row == None:
             input.task_done()
             break
-        indexing(row, "testversioningdag", "testdict")
+        indexing(row, index, doctype)
         # Version index: testdict_version
-        print("Main Index updated?: Probably")
+        # print("Main Index updated?: Probably")
         input.task_done()
     print("thead exited")
 
 
-# Setting up multithreading via queues
-numOfThreadds = 10
-q = Queue(maxsize=0)
+def index_datasett(index, doctype, file, key):
+    # Creates index with default timestamp mapping
+    mappings = {"mappings" : {
+                "_default_":{
+                    "_timestamp" : {
+                        "enabled" : true,
+                        "store" : true
+                        }
+                    }
+                }}
 
-# maa eg skriva om all koden slik at det faktisk er ein queue av rows??
-for i in range(numOfThreadds):
-    worker = Thread(target=indexIntoMainIndex, args=(q, "testversioningdag", "testdict"))
-    worker.setDaemon(True)
-    worker.start()
-
-csvfile = open("C:/Users/DagVegard/Documents/enhetsregisteretkanskje17_10_17.csv", "r", encoding="utf-8")
-reader = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
-
-# rows = list(reader)
-rows = reader
-
-i = 0
-for r in rows:
-    if i == 1000:
-        break
-    i += 1
-    # indexing(r, "testversioningdag", "testdict")
-    q.put(r)
+    es.create(index, body=mappings)
 
 
+    numOfThreadds = 10
+    q = Queue(maxsize=0)
 
-# Finally add a sentinel value to prevent blocking TODO revider this comment lol
-for i in range(numOfThreadds):
-    q.put(None)
-print("Done converting dictreader to queue")
+    for i in range(numOfThreadds):
+        worker = Thread(target=indexIntoMainIndex, args=(q, index, doctype, key))
+        worker.setDaemon(True)
+        worker.start()
 
-print("Putting rows into queue worked probably")
-print("Queue size: " + str(q.qsize()))
-# Historiske problem... :
-#  problemene kjem frå av csv.DictReader() ikkje gir ordna liste, dvs. tilfeldig rekkefoolge, enten finn alternativ
-#  med sortert dict, eller proov med random testdata
-#  Problem pga iterator over DictReader... list() fikser problemet men tar for mykje minne på einhetsregisteret
-#  Split into different files, at least a logger class?...
-#
-q.join()
-print("Multithreading finished?")
+    csvfile = open(file, "r", encoding="utf-8")
+    rows = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
+    i = 0
+    for r in rows:
+        if i == 1000:
+            break
+        i += 1
+        q.put(r)
+    for i in range(numOfThreadds):
+        q.put(None)
+    q.join()
 
 
+# keymap = {'brreg': lambda x: x['orgnr']}
 
-
-# compareInputAgainstOldData(rows, versionDocList, versionList, 'testversioningdag', 'testdict')
-# indexIntoMainIndex(rows, 'testversioningdag', 'testdict')
-# indexIntoVersioningIndex(versionDocList, versionList,'testversioningdag', 'testdictversions')
-
-print(time.time()-tt)
-
+index_datasett("info310", "brreg", "C:/Users/DagVegard/Documents/enhetsregisteretkanskje17_10_17.csv", lambda x: x['orgnr'])

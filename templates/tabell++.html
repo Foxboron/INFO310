@@ -13,9 +13,11 @@
 				<caption>Søkeresultater</caption>
 				<thead>
 					<tr>
+                    {% if result %}
                       {% for key in result[0]['_source'].keys() %}
                           <th rowspan=2>{{key}}</th>
                       {% endfor %}
+                    {% endif %}
 		  			</tr>
 	  			</thead>
 	  			<tbody>
