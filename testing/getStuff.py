@@ -37,7 +37,7 @@ res = es.search(index="testversioningdag", doc_type="testdictversions", size=50,
             }
         })
 print(res)
-for hit in res['hits']['hits']:
-    print(hit["_source"])
-    print(hit["_id"])
-    print("%(orgnr)s %(Name) s" % hit["_source"])
+# for hit in res['hits']['hits']:
+#     print(hit["_source"])
+#     print(hit["_id"])
+#     print("%(orgnr)s %(Name) s" % hit["_source"])
