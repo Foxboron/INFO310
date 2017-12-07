@@ -1,39 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html>
 	<head>
-	  <meta charset="UTF-8">
-	  <title>Difi data</title>
-      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
-	</head>
-	<body>
-		<h1> Difi data representert av oss</h1>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Difi data</title>
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheet.css') }}"/>
 
-			<h2>Søk</h2>
-			<div class="s_cont">
+		<style type="text/css">
+    #container {
+    	min-width: 200px;
+    	max-width: 500px;
+    	height: 300px;
+    	margin: 0 auto
+    }
+    		</style>
+    	</head>
+    	<body>
 
-			<form role="search" action="/search" method="post" id="search_bar">
+<h1> Difi data representert av oss</h1>
+
+            <h2>Søk</h2>
+            <div class="s_cont">
+
+            <form role="search" action="/search" method="post" id="search_bar">
                 <div class="form-group">
-				    <input type="text" placeholder="Her kan du søke etter en bedrift eller organisasjon" id="search" name="search">
+                    <input type="text" placeholder="Her kan du søke etter en bedrift eller organisasjon" id="search" name="search">
                 </div>
                 <button type="submit" id="knapp">Søk</button>
-			</form>
+            </form>
 
 
-			<div class="dropdown">
-  				<button class="dropbtn">Dropdown</button>
-  					<div class="dropdown-content">
-   					 	<a href="#">Link 1</a>
-  			 		 	<a href="#">Link 2</a>
-  			 		 	<a href="#">Link 3</a>
-  					</div>
-			</div>
-		</div>
+            <div class="dropdown">
+                <button class="dropbtn">Dropdown</button>
+                    <div class="dropdown-content">
+                        <a href="#">Link 1</a>
+                        <a href="#">Link 2</a>
+                        <a href="#">Link 3</a>
+                    </div>
+            </div>
+        </div>
+    
+    <script src="{{ url_for('static', filename='highcharts.js') }}"></script>
+    <script src="{{ url_for('static', filename='series-label.js') }}"></script>
+    <script src="{{ url_for('static', filename='exporting.js') }}"></script>
 
-			<footer id="bunn">
-				<p>
-					<h4>Laget av Dag, Morten og Mads</h4>
-				</p>
-			</footer>
+
+
+    <div id="container"></div>
+
+
+
+    		<script type="text/javascript">
+
+    Highcharts.chart('container', {
+
+        title: {
+            text: 'Endringer i registeret de siste ukene'
+        },
+
+        subtitle: {
+            text: 'Source: difi'
+        },
+
+        yAxis: {
+            title: {
+                text: 'Endringer'
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle'
+        },
+
+        plotOptions: {
+            series: {
+                label: {
+                    connectorAllowed: false
+                },
+                pointStart: 36/* startdato/uke */
+            }
+        },
+        /* legg til data for hver uke eller dag her. */
+        series: [{
+            name: 'Endringer per uke', 
+            data: [434, 523, 577, 658, 931, 931, 133, 141]
+        }, ],
+
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    legend: {
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom'
+                    }
+                }
+            }]
+        }
+
+    });
+		</script>
 	</body>
-
 </html>

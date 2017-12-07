@@ -51,7 +51,74 @@
 			</table>
 		    </div>
 
-		
+	
+        <script src="{{ url_for('static', filename='exporting.js') }}"></script>
+        <script src="{{ url_for('static', filename='highcharts.js') }}"></script>
+
+
+        <div id="container" style="min-width: 310px; max-width:200px; height: 400px; margin: 0 auto"></div>
+
+
+
+        		<script type="text/javascript">
+
+        Highcharts.chart('container', {
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: 'Endringer i enetsregistere'
+            },
+            subtitle: {
+                text: 'Data endret de siste fem månedene'
+            },
+            xAxis: {
+                categories: ['August', 'September', 'Oktober', 'November', 'Desember'],
+                title: {
+                    text: null
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Endringer',
+                    align: 'high'
+                },
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            tooltip: {
+                valueSuffix: ' endringer'
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                x: -40,
+                y: 80,
+                floating: true,
+                borderWidth: 1,
+                backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
+                shadow: true
+            },
+            credits: {
+                enabled: false
+            },
+            series: [ {
+                data: [105, 95, 225, 74, 38] /*Legg til verdiene vil ha vist her*/
+            }]
+        });
+		</script>
+
+
 	</body>
 
 </html>
