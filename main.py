@@ -2,12 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from collections import OrderedDict
 from elasticsearch import Elasticsearch
 
+import requests
+
 import json
 
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200}])
 app = Flask(__name__)
 app.config['WTF_CSRF_ENABLED'] = False
-app.secret_key="LOLKEKSECURE"
+app.secret_key=""
 
 def json_response(func):
     from functools import wraps
@@ -61,27 +63,42 @@ def diff_versions(datasett, id, version, new_version):
 
 
 def search(string):
-    e = es.search(index="testversioningdag", doc_type="testdict", version=True, body={
+    r = requests.get("http://hotell.difi.no/api/json/brreg/enhetsregisteret/fields")
+    fields = [i["shortName"] for i in r.json()]
+    e = es.search(index="info310", doc_type="brreg", version=True, body={
             "query": {
                 "multi_match": {
                         "query": string,
-                        "fields": ["orgnr", "name", "Antall_ansatte", "Version"],
+                        "fields": fields, 
                         "fuzziness": "AUTO"
                     }
                 }
             })
+    print(es.cat.indices(index="info310"))
+    print(es.get_mappings())
     return e
 
 @app.route("/search/<string>")
 @json_response
 def search_results(string):
     e = search(string)
-    return e["hits"]["hits"]
+    return e
 
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    res = es.search(index="info310", body={
+      "aggs": {
+        "typesAgg": {
+          "terms": {
+            "field": "_type",
+            "size": 200
+          }
+        }
+      },
+      "size": 0})
+    res = [i["key"] for i in res["aggregations"]["typesAgg"]["buckets"] if "_versions" not in i["key"] ]
+    return render_template("index.html", datasets=res)
 
 @app.route("/search", methods=["POST", "GET"])
 def search_es():
@@ -101,13 +118,13 @@ def diff_rows(datasett, id):
         return render_template("compare.html", results=l)
     return render_template("compare.html", results=[])
 
-@app.route("/histogram", methods=["POST", "GET"])
-def get_history():
+
+def get_hisogram():
     aggs = {
     "aggs" : {
         "date_over_time" : {
             "date_histogram" : {
-                "field" : "date",
+                "field" : "timestamp",
                 "interval" : "1D",
                 "format" : "yyyy-MM-dd",
                 "keyed": True
@@ -115,10 +132,32 @@ def get_history():
         }
     }
 }
-    res = es.search(index="testversioningdag", body=aggs)
+    res = es.search(index="info310", doc_type="brreg_versions", size=0, body=aggs)
+    bucket = res["aggregations"]["date_over_time"]["buckets"]
+    data = [[],[]]
+    for v in bucket.values():
+        data[0].append(v["key_as_string"])
+        data[1].append(v["doc_count"])
+    return data
 
+@app.route("/histogram", methods=["POST", "GET"])
+def get_history():
+    data = get_hisogram()
+    return json.dumps(data, indent=2, sort_keys=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route("/items", methods=["POST", "GET"])
+def get_items():
+    res = es.search(index="info310", body={
+  "aggs": {
+    "typesAgg": {
+      "terms": {
+        "field": "_type",
+        "size": 200
+      }
+    }
+  },
+  "size": 0})
     return json.dumps(res, indent=2, sort_keys=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
-
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", debug=True)
