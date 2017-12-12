@@ -2,9 +2,12 @@ import csv
 from elasticsearch import Elasticsearch
 from queue import *
 from threading import Thread
+import datetime
 import time
+import requests
 
 tt = time.time()
+
 
 
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
@@ -13,9 +16,11 @@ es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
 
 
 def insert_to_main(row, id, index, doctype):
+    row["timestamp"] = datetime.datetime.now()
     es.index(index=index, doc_type=doctype, id=id, body=row)
 
 def insert_new_version(row, id, version, index, doctype):
+    row["timestamp"] = datetime.datetime.now()
     id = "{}_{}".format(str(id), str(version))
     es.index(index=index, doc_type=doctype, id=id, body=row)
 
@@ -53,7 +58,7 @@ def indexIntoMainIndex(input, index, doctype, key):
         if row == None:
             input.task_done()
             break
-        indexing(row, index, doctype)
+        indexing(row, index, doctype, key)
         # Version index: testdict_version
         # print("Main Index updated?: Probably")
         input.task_done()
@@ -61,19 +66,6 @@ def indexIntoMainIndex(input, index, doctype, key):
 
 
 def index_datasett(index, doctype, file, key):
-    # Creates index with default timestamp mapping
-    mappings = {"mappings" : {
-                "_default_":{
-                    "_timestamp" : {
-                        "enabled" : true,
-                        "store" : true
-                        }
-                    }
-                }}
-
-    es.create(index, body=mappings)
-
-
     numOfThreadds = 10
     q = Queue(maxsize=0)
 
@@ -86,7 +78,7 @@ def index_datasett(index, doctype, file, key):
     rows = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
     i = 0
     for r in rows:
-        if i == 1000:
+        if i == 10000:
             break
         i += 1
         q.put(r)
@@ -97,4 +89,7 @@ def index_datasett(index, doctype, file, key):
 
 # keymap = {'brreg': lambda x: x['orgnr']}
 
-index_datasett("info310", "brreg", "C:/Users/DagVegard/Documents/enhetsregisteretkanskje17_10_17.csv", lambda x: x['orgnr'])
+#index_datasett("info310", "brreg", "C:/Users/DagVegard/Documents/enhetsregistereteistundsiden.csv", lambda x: x['orgnr'])
+
+print("Took : " + str((time.time()-tt)))
+# todo: lek med apiet til Morten, sjekk siste oppdaterte tidspunkt og indekser om det er brreg og er seinare enn indeksering

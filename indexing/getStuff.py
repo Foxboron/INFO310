@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 60}])
 
 
-allCount = es.count(index="testversioningdag", body={
+allCount = es.count(index="info310", body={
             "query": {
                 "match_all": {}
 
@@ -12,7 +12,7 @@ allCount = es.count(index="testversioningdag", body={
 
 print('Count of entire index: ' + str(allCount))
 
-mainCount = es.count(index="testversioningdag", doc_type='testdict', body={
+mainCount = es.count(index="info310", doc_type='brreg', body={
             "query": {
                 "match_all": {}
 
@@ -21,7 +21,7 @@ mainCount = es.count(index="testversioningdag", doc_type='testdict', body={
 
 print('Count of main doc type: ' + str(mainCount))
 
-versionCount = es.count(index="testversioningdag", doc_type='testdictversions', body={
+versionCount = es.count(index="info310", doc_type='brreg', body={
             "query": {
                 "match_all": {}
 
@@ -30,7 +30,7 @@ versionCount = es.count(index="testversioningdag", doc_type='testdictversions', 
 
 print('Count of versioning doc type: ' + str(versionCount))
 
-res = es.search(index="testversioningdag", doc_type="testdictversions", size=50, body={
+res = es.search(index="info310", doc_type="brreg_versions", size=50, body={
             "query": {
                 "match_all": {}
 
