@@ -1,7 +1,8 @@
 import requests
 import time
 import shutil
-from indexing import versioning
+from threading import Thread
+from indexing import versioning, BOMremover
 
 # while True:
 r = requests.get("http://hotell.difi.no/api/json")
@@ -32,14 +33,23 @@ for entry in r:
                     shutil.copyfileobj(download.raw, file)
                 print("done copying to file")
 
-                versioning.index_datasett("info310", "brreg", fullPath,
-                               lambda x: x['orgnr'])
+                # Remove BOM
+                BOMremover.removeBOMFromCSV(fullPath)
+                print("BOM removed")
+
+                # Assign the task of indexing the updated dataset to a new thread
+                # so that checking the other datasets in the API can continue without waiting
+                worker = Thread(target=versioning.index_datasett, args=("info310", "brreg", fullPath,
+                               lambda x: x['orgnr']))
+                worker.setDaemon(True)
+                worker.start()
+
+    print("Checking the other datasets continues")
+                # TODO need some join/close stuff here?
 
 
-
-
-
-
+# finally sleep 1 hour
+#time.sleep(3600)
 
 
 

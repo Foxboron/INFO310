@@ -4,16 +4,8 @@ from queue import *
 from threading import Thread
 import datetime
 import time
-import requests
-
-tt = time.time()
-
-
 
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
-
-
-
 
 def insert_to_main(row, id, index, doctype):
     row["timestamp"] = datetime.datetime.now()
@@ -87,9 +79,17 @@ def index_datasett(index, doctype, file, key):
     q.join()
 
 
-# keymap = {'brreg': lambda x: x['orgnr']}
+if __name__ == "__main__":
+    tt = time.time()
 
-#index_datasett("info310", "brreg", "C:/Users/DagVegard/Documents/enhetsregistereteistundsiden.csv", lambda x: x['orgnr'])
+    es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
 
-print("Took : " + str((time.time()-tt)))
-# todo: lek med apiet til Morten, sjekk siste oppdaterte tidspunkt og indekser om det er brreg og er seinare enn indeksering
+    # keymap = {'brreg': lambda x: x['orgnr']}
+
+    index_datasett("info310", "brreg", "C:/Users/DagVegard/Documents/info310/brreg/enhetsregistereteistundsiden.csv", lambda x: x['orgnr'])
+
+    print("Took : " + str((time.time()-tt)))
+
+# TODO:
+# mulige bugs med versjonnummer? ser ut til å bli inkrementert med 2 i stedet for 1, og når det eigentlig ikkje er
+# ny version

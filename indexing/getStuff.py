@@ -37,7 +37,14 @@ res = es.search(index="info310", doc_type="brreg_versions", size=50, body={
             }
         })
 print(res)
-# for hit in res['hits']['hits']:
-#     print(hit["_source"])
-#     print(hit["_id"])
-#     print("%(orgnr)s %(Name) s" % hit["_source"])
+
+
+c = 0
+for hit in res['hits']['hits']:
+    if c == 20:
+        break
+    c += 1
+    print(hit["_source"])
+    print(hit["_id"])
+    print("%(orgnr)s" % hit["_source"])
+
