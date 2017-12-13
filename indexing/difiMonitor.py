@@ -41,7 +41,7 @@ for entry in r:
                 # so that checking the other datasets in the API can continue without waiting
                 worker = Thread(target=versioning.index_datasett, args=("info310", "brreg", fullPath,
                                lambda x: x['orgnr']))
-                worker.setDaemon(True)
+                #worker.setDaemon(True)
                 worker.start()
 
     print("Checking the other datasets continues")
