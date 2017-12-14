@@ -5,9 +5,10 @@ from threading import Thread
 import datetime
 import time
 
-# TODO: bug med versjonar, er organisasjonar som faar altfor hoog versjon (7, 9, 11 der det skulle vera 1)
+
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
 
+# Methods for inserting a row into the two doctypes, with a timestamp
 def insert_to_main(row, id, index, doctype):
     row["timestamp"] = datetime.datetime.now()
     es.index(index=index, doc_type=doctype, id=id, body=row)
@@ -49,8 +50,8 @@ def indexing(row, index, doctype, key):
 
 
 
-# TODO rename this to something that makes sense
-def indexIntoMainIndex(input, index, doctype, key):
+# Defines the behavior of threads
+def index_loop(input, index, doctype, key):
     while True:
         row = input.get()
         if row == None:
@@ -67,7 +68,7 @@ def index_datasett(index, doctype, file, key):
     q = Queue(maxsize=0)
 
     for i in range(numOfThreadds):
-        worker = Thread(target=indexIntoMainIndex, args=(q, index, doctype, key))
+        worker = Thread(target=index_loop, args=(q, index, doctype, key))
         worker.setDaemon(True)
         worker.start()
 
