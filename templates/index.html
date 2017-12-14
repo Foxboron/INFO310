@@ -52,15 +52,12 @@
     		<script type="text/javascript">
 
     Highcharts.chart('container', {
-
         title: {
             text: 'Endringer i registeret de siste ukene'
         },
-
-        subtitle: {
-            text: 'Source: difi'
+        xAxis: {
+            categories: {{graph[0] | tojson | safe}},
         },
-
         yAxis: {
             title: {
                 text: 'Endringer'
@@ -71,19 +68,19 @@
             align: 'right',
             verticalAlign: 'middle'
         },
-
         plotOptions: {
             series: {
                 label: {
                     connectorAllowed: false
                 },
-                pointStart: 36/* startdato/uke */
+                dataLabels: {
+                    enabled: true
+                }
             }
         },
-        /* legg til data for hver uke eller dag her. */
         series: [{
-            name: 'Endringer per uke', 
-            data: [434, 523, 577, 658, 931, 931, 133, 141]
+            name: 'Endringer per dag', 
+            data: {{graph[1] | tojson | safe}} 
         }, ],
 
         responsive: {
