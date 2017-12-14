@@ -1,5 +1,0 @@
-
-
-print "Mads er best"
-
-

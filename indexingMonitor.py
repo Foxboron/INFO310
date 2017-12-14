@@ -4,6 +4,9 @@ import shutil
 from threading import Thread
 from indexing import versioning, BOMremover
 
+# This module is intended to run 24/7 and monitors the Difi API for updated datasets
+# when a dataset is found to have been updated since we last indexed it, we re-index it
+
 # while True:
 r = requests.get("http://hotell.difi.no/api/json")
 r = r.json()
@@ -13,6 +16,9 @@ r = r.json()
 difiLastIndexed = {}
 # temp assignment for testing purposes
 difiLastIndexed["brreg"] = 0
+
+# Keeping time for measurement
+tt = time.time()
 
 # Iterating through the difi api to check if datasets have been updated after we indexed them last
 for entry in r:
@@ -48,6 +54,8 @@ for entry in r:
                 # TODO need some join/close stuff here?
 
 
+
+print("Took : " + str(time.time() - tt))
 # finally sleep 1 hour
 #time.sleep(3600)
 
