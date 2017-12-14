@@ -25,6 +25,8 @@ def indexing(row, index, doctype, key):
         res = es.get(index=index, doc_type=doctype, id=key(row))
     except Exception as e:
         # print('Organization not found (probably): ' + str(e))
+
+        print("Handling orgnr: " + str(key(row)))
         insert_to_main(row, key(row), index, doctype)
         insert_new_version(row, key(row), 1, index, doctype + "_versions")
         # print('New org was appended to versionList')
@@ -46,7 +48,8 @@ def indexing(row, index, doctype, key):
         # print(str(row['orgnr']) + ' not found - strange because this should cause an ES exception')
 
 
-# Indexing the new document
+
+# TODO rename this to something that makes sense
 def indexIntoMainIndex(input, index, doctype, key):
     while True:
         row = input.get()

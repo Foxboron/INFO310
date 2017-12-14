@@ -7,6 +7,8 @@ from indexing import versioning, BOMremover
 # This module is intended to run 24/7 and monitors the Difi API for updated datasets
 # when a dataset is found to have been updated since we last indexed it, we re-index it
 
+# todo infinite loop, sjekka at sleep funker, pwd/os.getcwd() greier for Andreas, fiksa versjons?,
+
 # while True:
 r = requests.get("http://hotell.difi.no/api/json")
 r = r.json()
@@ -27,6 +29,7 @@ for entry in r:
             if entry["updated"] > difiLastIndexed["brreg"]:
                 download = requests.get("http://hotell.difi.no/download/brreg/enhetsregisteret", stream=True)
 
+                # We use timestamp to differentiate between different versions of the same dataset
                 currentUnixTimestamp = time.time()
                 currentUnixTimestamp = int(currentUnixTimestamp)
                 print(currentUnixTimestamp)
