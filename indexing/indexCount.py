@@ -1,10 +1,10 @@
 from elasticsearch import Elasticsearch
 
 
-# This module provides simple search output for testing and is not essential to the rest of the system
+# This module provides simple search output for testing (e.g. counting documents)
+# and is not essential to the rest of the system
 
 es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 60}])
-
 
 allCount = es.count(index="info310", body={
             "query": {
@@ -24,7 +24,7 @@ mainCount = es.count(index="info310", doc_type='brreg', body={
 
 print('Count of main doc type: ' + str(mainCount))
 
-versionCount = es.count(index="info310", doc_type='brreg', body={
+versionCount = es.count(index="info310", doc_type='brreg_versions', body={
             "query": {
                 "match_all": {}
 
@@ -41,9 +41,11 @@ res = es.search(index="info310", doc_type="brreg_versions", size=60, body={
         })
 print(res)
 
-for hit in res['hits']['hits']:
-    print(hit["_source"])
-    print(hit["_id"])
-    # print("version : " + str(hit["_version"]))
-    print("%(orgnr)s" % hit["_source"])
+# Uncomment this to see 60 of the indexed rows
+# for hit in res['hits']['hits']:
+#     print(hit["_source"])
+#     print(hit["_id"])
+#     # print("version : " + str(hit["_version"]))
+#     print("%(orgnr)s" % hit["_source"])
+
 
