@@ -4,15 +4,12 @@ import shutil
 import os
 import errno
 from threading import Thread
-from indexing import versioning, BOMremover
+from indexing import versioning, bom_remover
 
 # This module is intended to run 24/7 and monitors the Difi API for updated datasets
 # when a dataset is found to have been updated since we last indexed it, we re-index it
 
-# todo FIX mystisk tredje doctype pga typo elns
-
-# creating a dict over when the datasets we're working with were last indexed
-# in our case, we only have enhetsregisteret
+# creating a dict over when the datasets (for now enhetsregisteret) we're working with were last indexed
 difi_last_indexed = {}
 
 # temp assignment for testing purposes
@@ -56,7 +53,7 @@ while True:
                 print("The dataset can be found at: " + full_path)
 
                 # The datasets come with a BOM which we remove
-                BOMremover.remove_bom_from_csv(full_path)
+                bom_remover.remove_bom_from_csv(full_path)
                 print("BOM removed")
 
                 # Assign the task of indexing the updated dataset to a new thread
