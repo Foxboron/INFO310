@@ -30,17 +30,17 @@ def json_response(func):
 @app.route("/version/<datasett>/<id>/<version>")
 @json_response
 def get_version(datasett, id, version):
-    e = es.get(index="testversioningdag", doc_type=datasett+"versions", id="{id}_{version}".format(id=id, version=version))
+    e = es.get(index="info310", doc_type=datasett+"_versions", id="{id}_{version}".format(id=id, version=version))
     return [e["_source"]]
 
 def get_diff(datasett, id, version, new_version):
     if version > new_version:
-        return "Lolfeil"
+        return {}
     try:
-        old = es.get(index="testversioningdag", doc_type=datasett+"versions", id="{id}_{version}".format(id=id, version=version))
+        old = es.get(index="info310", doc_type=datasett+"_versions", id="{id}_{version}".format(id=id, version=version))
         old = old["_source"]
 
-        new = es.get(index="testversioningdag", doc_type=datasett+"versions", id="{id}_{version}".format(id=id, version=new_version))
+        new = es.get(index="info310", doc_type=datasett+"_versions", id="{id}_{version}".format(id=id, version=new_version))
         new = new["_source"]
     except Exception as e:
         return {}
@@ -66,16 +66,14 @@ def search(string):
     r = requests.get("http://hotell.difi.no/api/json/brreg/enhetsregisteret/fields")
     fields = [i["shortName"] for i in r.json()]
     e = es.search(index="info310", doc_type="brreg", version=True, body={
-            "query": {
-                "multi_match": {
-                        "query": string,
-                        "fields": fields, 
-                        "fuzziness": "AUTO"
-                    }
+        "query": {
+            "multi_match": {
+                "query": string,
+                "fields": fields, 
+                "fuzziness": "AUTO"
                 }
-            })
-    print(es.cat.indices(index="info310"))
-    print(es.get_mappings())
+            }
+        })
     return e
 
 @app.route("/search/<string>")
@@ -85,20 +83,60 @@ def search_results(string):
     return e
 
 
+def get_indexes():
+    res = es.search(index="info310", body={
+        "aggs": {
+            "typesAgg": {
+                "terms": {
+                    "field": "_type",
+                    "size": 200
+                    }
+                }
+            },
+        "size": 0
+        })
+    return [i["key"] for i in res["aggregations"]["typesAgg"]["buckets"] if "_versions" not in i["key"]]
+
+def get_histogram(data=None):
+    indexes = [data]
+    if not data:
+        indexes = get_indexes()
+    aggs = {
+            "query": {
+                "terms": {
+                    "_type": indexes
+                    },
+                },
+            "aggs" : {
+                "date_over_time" : {
+                    "date_histogram" : {
+                        "field" : "timestamp",
+                        "interval" : "1D",
+                        "format" : "yyyy-MM-dd",
+                        "keyed": True
+                        }
+                    }
+                }
+            }
+    res = es.search(index="info310", size=0, body=aggs) 
+    bucket = res["aggregations"]["date_over_time"]["buckets"]
+    data = [[],[]]
+    for v in bucket.values():
+        data[0].append(v["key_as_string"])
+        data[1].append(v["doc_count"])
+    return data
+
+@app.route("/histogram", defaults={'data': None}, methods=["POST", "GET"])
+@app.route("/histogram/<data>", methods=["POST", "GET"])
+def get_history(data):
+    data = get_histogram(data=data)
+    return json.dumps(data, indent=2, sort_keys=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
 @app.route("/")
 def index():
-    res = es.search(index="info310", body={
-      "aggs": {
-        "typesAgg": {
-          "terms": {
-            "field": "_type",
-            "size": 200
-          }
-        }
-      },
-      "size": 0})
-    res = [i["key"] for i in res["aggregations"]["typesAgg"]["buckets"] if "_versions" not in i["key"] ]
-    return render_template("index.html", datasets=res)
+    data = get_histogram()
+    res = get_indexes()
+    return render_template("index.html", datasets=res, graph=data)
 
 @app.route("/search", methods=["POST", "GET"])
 def search_es():
@@ -107,56 +145,30 @@ def search_es():
 
 @app.route("/choose/<datasett>/<id>")
 def choose_row(datasett, id):
-    new = es.get(index="testversioningdag", doc_type=datasett, id="{id}".format(id=id))
+    new = es.get(index="info310", doc_type=datasett, id="{id}".format(id=id))
     return render_template("org.html", result=new)
 
 @app.route("/diff/<datasett>/<id>", methods=["POST", "GET"])
 def diff_rows(datasett, id):
+    data = get_histogram(data=datasett)
     versions = list(request.form)
     if len(versions) == 2:
         l = get_diff(datasett, id, versions[0], versions[1])
-        return render_template("compare.html", results=l)
-    return render_template("compare.html", results=[])
-
-
-def get_hisogram():
-    aggs = {
-    "aggs" : {
-        "date_over_time" : {
-            "date_histogram" : {
-                "field" : "timestamp",
-                "interval" : "1D",
-                "format" : "yyyy-MM-dd",
-                "keyed": True
-            }
-        }
-    }
-}
-    res = es.search(index="info310", doc_type="brreg_versions", size=0, body=aggs)
-    bucket = res["aggregations"]["date_over_time"]["buckets"]
-    data = [[],[]]
-    for v in bucket.values():
-        data[0].append(v["key_as_string"])
-        data[1].append(v["doc_count"])
-    return data
-
-@app.route("/histogram", methods=["POST", "GET"])
-def get_history():
-    data = get_hisogram()
-    return json.dumps(data, indent=2, sort_keys=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return render_template("compare.html", results=l, graph=data)
+    return render_template("compare.html", results=[], graph=data)
 
 @app.route("/items", methods=["POST", "GET"])
 def get_items():
     res = es.search(index="info310", body={
-  "aggs": {
-    "typesAgg": {
-      "terms": {
-        "field": "_type",
-        "size": 200
-      }
-    }
-  },
-  "size": 0})
+        "aggs": {
+            "typesAgg": {
+                "terms": {
+                    "field": "_type",
+                    "size": 200
+                    }
+                }
+            },
+        "size": 0})
     return json.dumps(res, indent=2, sort_keys=False), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 if __name__ == '__main__':
