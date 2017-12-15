@@ -39,7 +39,7 @@ def indexing(row, index, doctype, key):
                 insert_to_main(row, key(row), index, doctype)
                 insert_new_version(row, key(row), res['_version'] + 1, index, doctype + "_versions")
             else:
-                print(str(row['orgnr']) + ' did not change change')
+                print(str(row['orgnr']) + ' did not change')
 
 
 # Defines the behavior of threads

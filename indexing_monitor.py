@@ -27,7 +27,7 @@ while True:
         if entry["shortName"] == "brreg":
             if entry["updated"] > difi_last_indexed["brreg"]:
                 download = requests.get("http://hotell.difi.no/download/brreg/enhetsregisteret", stream=True)
-                print("Downloading dataset")
+                print("Downloading dataset, stand by...")
 
                 # We use timestamp to differentiate between different versions of the same dataset
                 current_unix_timestamp = time.time()
@@ -46,15 +46,17 @@ while True:
 
                 full_path = folder_path + "\\brreg_" + str(current_unix_timestamp) + ".csv"
 
-                print("Copying download to file..")
+                print("Copying download to file...")
                 with open(full_path, "wb") as file:
                     shutil.copyfileobj(download.raw, file)
                 print("Done copying to file")
                 print("The dataset can be found at: " + full_path)
 
-                # The datasets come with a BOM which we remove
-                bom_remover.remove_bom_from_csv(full_path)
-                print("BOM removed")
+                # We had issues caused by a BOM mark in the csv files earlier in our project
+                # this no longer seems to be the case but if examiners run into encoding issues
+                # the line below can be uncommented
+                # bom_remover.remove_bom_from_csv(full_path)
+                # print("BOM removed")
 
                 # Assign the task of indexing the updated dataset to a new thread
                 # so that checking the other datasets in the API can continue without waiting
@@ -65,7 +67,6 @@ while True:
                 difi_last_indexed["brreg"] = time.time()
 
         print("Checking the other datasets continues")
-        # TODO need some join/close stuff here?
 
     # finally sleep 1 hour before checking datasets again
     time.sleep(3600)
