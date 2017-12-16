@@ -7,6 +7,6 @@ This service requires a running elasticsearch instance to work. Add this in the 
 
 To install dependencies run `pip install -r requirements.txt`  
 
-To run web frontend `python web_frontend.py`  
+To run web frontend `python webserver.py`  
 
-To run indexer `python web_frontend.py`  
+To run indexer `python indexing_monitoring.py`  
