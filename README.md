@@ -1,5 +1,12 @@
 INFO310
 =======
 
-This is our project
-We are going to make a an index over difi.no data and the changes over time to the status of the data.
+This service requires a running elasticsearch instance to work. Add this in the top of `web_frontend.py` and
+`indexing/versioning.py`  
+
+
+To install dependencies run `pip install -r requirements.txt`  
+
+To run web frontend `python web_frontend.py`  
+
+To run indexer `python web_frontend.py`  

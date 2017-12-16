@@ -5,8 +5,12 @@ from threading import Thread
 import datetime
 import time
 
+
+HOSTNAME=""
+PORT=""
+
 # Establishing connection
-es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200, 'timeout': 30}])
+es = Elasticsearch([{'host': HOSTNAME, 'port': PORT, 'timeout': 30}])
 
 
 # Methods for inserting a row into the two doctypes, with a timestamp

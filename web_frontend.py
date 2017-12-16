@@ -1,12 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from collections import OrderedDict
-from elasticsearch import Elasticsearch
-
 import requests
-
 import json
 
-es = Elasticsearch([{'host': 'velox.vulpes.pw', 'port': 9200}])
+from collections import OrderedDict
+
+from elasticsearch import Elasticsearch
+from flask import Flask, render_template, request, redirect, url_for, flash
+
+# Hostname and port for the ElasticSearch instance
+HOSTNAME=""
+PORT=""
+
+
+es = Elasticsearch([{'host': HOSTNAME, 'port': PORT}])
 app = Flask(__name__)
 app.config['WTF_CSRF_ENABLED'] = False
 app.secret_key=""
